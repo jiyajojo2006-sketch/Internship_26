@@ -1,0 +1,45 @@
+module linearizer(
+    input clk,
+    input rst,
+    input [7:0] sensor_in,
+    output reg [7:0] linear_out
+);
+
+always @(posedge clk or posedge rst)
+begin
+    if(rst)
+        linear_out <= 8'd0;
+
+    else
+    begin
+
+        // Approximation using only shifts (multiplication) and adders
+        // (x * 2 / 5) ≈ (x >> 1) - (x >> 4)
+
+        if(sensor_in <= 8'd50)
+            linear_out <= sensor_in >> 1;   // divide by 2
+
+        else if(sensor_in <= 8'd100)
+            linear_out <= (((sensor_in - 8'd50) >> 1)
+                         - ((sensor_in - 8'd50) >> 4))
+                         + 8'd20;
+
+        else if(sensor_in <= 8'd150)
+            linear_out <= (((sensor_in - 8'd100) >> 1)
+                         - ((sensor_in - 8'd100) >> 4))
+                         + 8'd40;
+
+        else if(sensor_in <= 8'd200)
+            linear_out <= (((sensor_in - 8'd150) >> 1)
+                         - ((sensor_in - 8'd150) >> 4))
+                         + 8'd60;
+
+        else
+            linear_out <= (((sensor_in - 8'd200) >> 1)
+                         - ((sensor_in - 8'd200) >> 4))
+                         + 8'd80;
+
+    end
+end
+
+endmodule
